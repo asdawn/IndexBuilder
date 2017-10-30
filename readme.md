@@ -47,3 +47,8 @@ I have to deal with the first part. Then most work can be done with PostGIS, jus
 
   + Convert rings to polygons, and make holes to avoid overlaps - then it can be placed on web with *color ramp* (a set of gradient colors).
   + Save the result to database and publish them; or write a WFS-like service.
+  
+  
+### requires
+
+GDAL (gdal-bin, gdal-java)  
