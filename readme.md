@@ -38,6 +38,7 @@ I have to deal with the first part. Then most work can be done with PostGIS, jus
   >Yes, Gasussian is great. However here the output is a raster layer (regular grids with values). If we use Gasussian, we have to calculate the **integral** of density in each grid. Forgive me, I'm not good on this. Maybe my girl friend can give me the formula - she's a math genius.
 
 2. Map density to index
+
   The density varies greatly betweens density rasters. The result can be more readable by mapping density to a index value between 0 and 100. 0 means there's no such pois nearby, 1 means a little, 100 means plenty of. 
 
 3. Extract contours
