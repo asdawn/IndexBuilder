@@ -132,7 +132,7 @@ public class GridEstimator {
 		double x0 = baseX - bandWidth;
 		double x1 = baseX + bandWidth;
 		double y0 = baseY - bandWidth;
-		double y1 = baseY - bandWidth;
+		double y1 = baseY + bandWidth;
 		//Generate possible grids
 		StringBuffer sb = new StringBuffer();
 		sb.append("POLYGON((");
@@ -162,6 +162,18 @@ public class GridEstimator {
 				//writeback
 				result.put(grid, density);
 			}			
+		}
+	}
+	
+	
+	public static void main(String[] args) {
+		GridEstimator e = new GridEstimator();
+		Point2D[] points = new Point2D[2];
+		points[0] = new Point2D.Double(1, 1);
+		points[1] = new Point2D.Double(1, 1.3);
+		Map<Long,  Double> result = e.estimate(points, 0.2,GridLevel.GRID_0_1);
+		for(Long grid: result.keySet()) {
+			System.out.println(Grid.getWKT(grid)+"\t"+result.get(grid));
 		}
 	}
 }

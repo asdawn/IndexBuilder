@@ -3,6 +3,6 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="D:/lib/gdal.jar"/>
-	<classpathentry kind="lib" path="D:/lib/navi_grid156.jar"/>
+	<classpathentry kind="lib" path="C:/Users/dl/Desktop/navi_grid157full.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
