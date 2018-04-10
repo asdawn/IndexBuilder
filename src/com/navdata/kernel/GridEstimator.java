@@ -22,7 +22,11 @@ import com.navinfo.grid.VirtualGrid;
  */
 public class GridEstimator {
 	
+	private int HASH_SIZE = 1000;
+	private float HASH_RATIO = 0.5f;
 	private static final Kernel2D K = new UniformKernel2D();
+	//TODO
+	private int i =0;
 
 	/**
 	 * Calculate expectation in grids
@@ -37,8 +41,12 @@ public class GridEstimator {
 	 * @return the result in a {@link Map}, gridID to expectation
 	 */
 	Map<Long, Double> estimate(Map<Point2D, Double> points, double bandWidth, GridLevel gridLevel) {
-		Map<Long, Double> result = new HashMap<>();
+		Map<Long, Double> result = new HashMap<>(HASH_SIZE,HASH_RATIO);
+		System.out.println(result.size());
 		for (Point2D point : points.keySet()) {
+			i++;
+			System.out.println(i+"estimated ");
+			
 			Double n = points.get(point);
 			updateMap(result, point, n, bandWidth, gridLevel);
 		}
@@ -57,7 +65,7 @@ public class GridEstimator {
 	 * @return the result in a {@link Map}, gridID to density
 	 */
 	Map<Long, Double> estimate(Collection<Point2D> points, double bandWidth, GridLevel gridLevel) {
-		Map<Long, Double> result = new HashMap<>();
+		Map<Long, Double> result = new HashMap<>(HASH_SIZE,HASH_RATIO);
 		for (Point2D point : points) {
 			updateMap(result, point, null, bandWidth, gridLevel);
 		}
@@ -74,7 +82,7 @@ public class GridEstimator {
 	 * @return the result in a {@link Map}, gridID to density
 	 */
 	Map<Long, Double> estimate(Collection<Point2D> points, double bandWidth) {
-		Map<Long, Double> result = new HashMap<>();
+		Map<Long, Double> result = new HashMap<>(HASH_SIZE,HASH_RATIO);
 		for (Point2D point : points) {
 			updateMap(result, point, null, bandWidth, null);
 		}
@@ -93,7 +101,7 @@ public class GridEstimator {
 	 * @return the result in a {@link Map}, gridID to density
 	 */
 	Map<Long, Double> estimate(Point2D[] points, double bandWidth, GridLevel gridLevel) {
-		Map<Long, Double> result = new HashMap<>();
+		Map<Long, Double> result = new HashMap<>(HASH_SIZE,HASH_RATIO);
 		for (Point2D point : points) {
 			updateMap(result, point, null, bandWidth, gridLevel);
 		}
@@ -110,7 +118,7 @@ public class GridEstimator {
 	 * @return the result in a {@link Map}, gridID to density
 	 */
 	Map<Long, Double> estimate(Point2D[] points, double bandWidth) {
-		Map<Long, Double> result = new HashMap<>();
+		Map<Long, Double> result = new HashMap<>(HASH_SIZE,HASH_RATIO);
 		for (Point2D point : points) {
 			updateMap(result, point, null, bandWidth, null);
 		}
@@ -163,8 +171,7 @@ public class GridEstimator {
 				result.put(grid, density);
 			}			
 		}
-	}
-	
+	}	
 	
 	public static void main(String[] args) {
 		GridEstimator e = new GridEstimator();
