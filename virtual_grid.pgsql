@@ -1,10 +1,10 @@
 /**
 Generate grids within/intersects given geometry.
-
+Copyright (C) 2017 NavData, NavInfo
 **/
 
 /**
-v_gridid
+v_gridid_array
     get gridIDs according to given geometry and grid level. 
     geom - a geometry
     gridLevel - the gridlevel, z part of gridid
@@ -21,7 +21,8 @@ v_gridid
     within - whether the grids generated should be within the given geometry or just intersect it. 
              The default value is false, which is valid for all types of geometries
 **/
-CREATE or REPLACE FUNCTION v_gridid_array(geom GEOMETRY, gridLevel INT, within BOOLEAN DEFAULT FALSE) RETURNS BIGINT[] AS $$
+DROP FUNCTION if exists v_gridid_array(GEOMETRY,INT, BOOLEAN);
+CREATE FUNCTION v_gridid_array(geom GEOMETRY, gridLevel INT, within BOOLEAN DEFAULT FALSE) RETURNS BIGINT[] AS $$
 DECLARE
    geomType text;
 BEGIN
@@ -42,6 +43,83 @@ END;
 $$ LANGUAGE plpgsql;
 
 /**
+v_gridwkt_set
+    get grids(as WKTs) according to given geometry and grid level, each gridid as a row 
+    geom - a geometry
+    gridLevel - the gridlevel, z part of gridid
+ 			0 - 10m (+0.0001, +0.0001)  
+			1 - 100m (+0.001, +0.001) 
+			2 - 200m (+0.002, +0.002) 
+			3 - reserved   
+			4 - 500m (+0.005, +0.005)  
+			5 - 1000m (+0.01, +0.01)
+			6 - 2000m (+0.02, +0.02) 
+			7 - reserved   
+			8 - 5000m (+0.05, +0.05)  
+			9 - 10000m (+0.1, +0.1)  
+    within - whether the grids generated should be within the given geometry or just intersect it. 
+             The default value is false, which is valid for all types of geometries
+    point - return a point or a polygon, the default is false, that means return the grid polygon
+	center - whether use the centroid a the grid or the lower-left of the grid, the default is false, 
+			that means return the lower-left corner of the grid. This parameter is valid only when 
+			the point parameter is true 
+**/
+DROP FUNCTION if exists v_gridwkt_set(GEOMETRY, INT, BOOLEAN, BOOLEAN, BOOLEAN);
+CREATE FUNCTION v_gridwkt_set(geom GEOMETRY, gridLevel INT, within BOOLEAN DEFAULT FALSE,  point BOOLEAN  DEFAULT FALSE, center BOOLEAN DEFAULT FALSE) RETURNS TABLE (gridid TEXT) AS
+$$ SELECT ST_AsText(gids2geoms) FROM gids2geoms(v_gridid_array(geom, gridLevel, within), point, center) $$
+LANGUAGE SQL;
+
+/**
+v_gridgeom_set
+    get grids(as geometries) according to given geometry and grid level, each gridid as a row 
+    geom - a geometry
+    gridLevel - the gridlevel, z part of gridid
+ 			0 - 10m (+0.0001, +0.0001)  
+			1 - 100m (+0.001, +0.001) 
+			2 - 200m (+0.002, +0.002) 
+			3 - reserved   
+			4 - 500m (+0.005, +0.005)  
+			5 - 1000m (+0.01, +0.01)
+			6 - 2000m (+0.02, +0.02) 
+			7 - reserved   
+			8 - 5000m (+0.05, +0.05)  
+			9 - 10000m (+0.1, +0.1)  
+    within - whether the grids generated should be within the given geometry or just intersect it. 
+             The default value is false, which is valid for all types of geometries
+    point - return a point or a polygon, the default is false, that means return the grid polygon
+	center - whether use the centroid a the grid or the lower-left of the grid, the default is false, 
+			that means return the lower-left corner of the grid. This parameter is valid only when 
+			the point parameter is true 
+**/
+DROP FUNCTION if exists v_gridgeom_set(GEOMETRY, INT, BOOLEAN, BOOLEAN, BOOLEAN);
+CREATE FUNCTION v_gridgeom_set(geom GEOMETRY, gridLevel INT, within BOOLEAN DEFAULT FALSE,  point BOOLEAN  DEFAULT FALSE, center BOOLEAN DEFAULT FALSE) RETURNS TABLE (gridid Geometry) AS
+$$ SELECT * FROM gids2geoms(v_gridid_array(geom, gridLevel, within), point, center) $$
+LANGUAGE SQL;
+
+/**
+v_gridid_set
+    get gridIDs according to given geometry and grid level, each gridid as a row 
+    geom - a geometry
+    gridLevel - the gridlevel, z part of gridid
+ 			0 - 10m (+0.0001, +0.0001)  
+			1 - 100m (+0.001, +0.001) 
+			2 - 200m (+0.002, +0.002) 
+			3 - reserved   
+			4 - 500m (+0.005, +0.005)  
+			5 - 1000m (+0.01, +0.01)
+			6 - 2000m (+0.02, +0.02) 
+			7 - reserved   
+			8 - 5000m (+0.05, +0.05)  
+			9 - 10000m (+0.1, +0.1)  
+    within - whether the grids generated should be within the given geometry or just intersect it. 
+             The default value is false, which is valid for all types of geometries
+**/
+DROP FUNCTION if exists v_gridid_set(GEOMETRY, INT, BOOLEAN);
+CREATE FUNCTION v_gridid_set(geom GEOMETRY, gridLevel INT, within BOOLEAN DEFAULT FALSE) RETURNS TABLE (gridid BIGINT) AS
+$$ SELECT * FROM UNNEST(v_gridid_array(geom, gridLevel, within)) $$
+LANGUAGE SQL;
+
+/**
 _getGridIDFromPoint
     get a gridID according to given Point and grid level. 
     geom - a Point geometry
@@ -57,9 +135,10 @@ _getGridIDFromPoint
 			8 - 5000m (+0.05, +0.05)  
 			9 - 10000m (+0.1, +0.1)  	
 **/
-CREATE or REPLACE FUNCTION _getGridIDFromPoint(geom GEOMETRY, gridLevel INT) RETURNS BIGINT AS $$
+DROP FUNCTION if exists _getGridIDFromPoint(GEOMETRY, INT);
+CREATE FUNCTION _getGridIDFromPoint(geom GEOMETRY, gridLevel INT) RETURNS BIGINT AS $$
 DECLARE
-    gridID BIGINT[];
+    gridID BIGINT;
 BEGIN
     IF geom IS NULL THEN
         return NULL;
@@ -85,6 +164,7 @@ _getGridsFromMultiPoint
 			8 - 5000m (+0.05, +0.05)  
 			9 - 10000m (+0.1, +0.1)  	
 **/
+DROP FUNCTION if exists _getGridsFromMultiPoint(GEOMETRY, INT);
 CREATE or REPLACE FUNCTION _getGridsFromMultiPoint(geom GEOMETRY, gridLevel INT) RETURNS BIGINT[] AS $$
 DECLARE
     gridIDs BIGINT[];
@@ -122,7 +202,8 @@ _getGridsFromGeometry
     within - whether the grids generated should be within the given geometry or just intersect it. 
              The default value is false, which is valid for all types of geometries
 **/
-CREATE or REPLACE FUNCTION _getGridsFromGeometry(geom GEOMETRY, gridLevel INT, within BOOLEAN DEFAULT FALSE) RETURNS BIGINT[] AS $$
+DROP FUNCTION if exists _getGridsFromGeometry(GEOMETRY, INT, BOOLEAN);
+CREATE FUNCTION _getGridsFromGeometry(geom GEOMETRY, gridLevel INT, within BOOLEAN DEFAULT FALSE) RETURNS BIGINT[] AS $$
 DECLARE
     gridIDs BIGINT[];
     lowerleftGridID bigint;

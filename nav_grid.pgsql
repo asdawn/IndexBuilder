@@ -13,7 +13,7 @@ navgrid_ver
 DROP FUNCTION if exists navgrid_ver();
 CREATE FUNCTION navgrid_ver() RETURNS text AS $$
 DECLARE
-	version CONSTANT text := '1.0.0'  ;
+	version CONSTANT text := '1.0.1'  ;
 BEGIN
 	RETURN version;
 END;
@@ -1744,3 +1744,43 @@ BEGIN
    	RETURN xy2grid(x::decimal, y::decimal, 9);
 END;
 $$ LANGUAGE plpgsql;
+
+
+------since 1.0.1--------
+/*
+gid2geom - 
+	Get the geometry of given grid ID. 
+	gridid - grid ID
+	point - return a point or a polygon, the default is false, that means return the grid polygon
+	center - whether use the centroid a the grid or the lower-left of the grid, the default is false, 
+			that means return the lower-left corner of the grid. This parameter is valid only when 
+			the point parameter is true 
+*/
+DROP FUNCTION if exists gid2geom(BIGINT, boolean, boolean);
+CREATE FUNCTION gid2geom(gridid BIGINT, point BOOLEAN DEFAULT FALSE, center BOOLEAN DEFAULT FALSE) RETURNS Geometry AS $$
+DECLARE
+BEGIN
+	IF gridid IS NULL THEN
+		RETURN NULL;
+	END IF;
+	IF point = TRUE THEN
+		RETURN gridpoint(gridid, center);
+	ELSE
+		RETURN gridpolygon(gridid);	
+	END IF;   	
+END;
+$$ LANGUAGE plpgsql;
+
+/*
+gids2geoms - 
+	Get the geometries of given grid IDs. Each geometry is stored as a row.
+	gridids - gridid in BIGINT ARRAY
+	point - return a point or a polygon, the default is false, that means return the grid polygon
+	center - whether use the centroid a the grid or the lower-left of the grid, the default is false, 
+			that means return the lower-left corner of the grid. This parameter is valid only when 
+			the point parameter is true 
+*/
+DROP FUNCTION if exists gids2geoms(BIGINT[], boolean, boolean);
+CREATE FUNCTION gids2geoms(gridids BIGINT[], point BOOLEAN  DEFAULT FALSE, center BOOLEAN DEFAULT FALSE) RETURNS TABLE (geom Geometry) AS 
+$$ SELECT gid2geom(unnest, point, center) FROM unnest(gridids)$$ 
+LANGUAGE sql;
