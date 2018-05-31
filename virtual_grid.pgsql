@@ -1,6 +1,6 @@
 /**
 Generate grids within/intersects given geometry.
-Copyright (C) 2017 NavData, NavInfo
+Copyright (C) 2018 NavData, NavInfo
 **/
 
 /**

@@ -45,7 +45,7 @@ RETURNS anyelement LANGUAGE SQL IMMUTABLE STRICT AS $$
 $$;
  
 -- And then wrap an aggregate around it
-CREATE AGGREGATE public.LAST (
+CREATE OR REPLACE AGGREGATE public.LAST (
         sfunc    = public.last_agg,
         basetype = anyelement,
         stype    = anyelement
