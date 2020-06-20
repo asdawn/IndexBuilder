@@ -53,3 +53,9 @@ I have to deal with the first part. Then most work can be done with PostGIS, jus
 ### requires
 
 GDAL (gdal-bin, gdal-java)  
+
+### currently
+drop table if exist density15;
+create table density15(gridid bigint primary key, density double precision);
+
+select upsert_grid_density('density15', kernel_uniform_grid(geom, 0.015, 4, 1), 100) from poi where kind between 150000 and 159999 limit 100;
